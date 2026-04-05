@@ -31,14 +31,13 @@
         body { background-color: #f4f6f8; color: #333; }
         .tarea-card { cursor: grab; }
         .tarea-card:active { cursor: grabbing; transform: scale(0.98); }
-        /* Efecto al arrastrar */
         .sortable-ghost { opacity: 0.4; background-color: #e2e8f0; }
         .sortable-drag { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
 
-    <div class="w-full max-w-4xl flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+    <div class="w-full max-w-5xl flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <div>
             <h1 class="text-3xl font-extrabold text-tierra">ParcelAPP 🌱</h1>
             <p class="text-sm font-semibold text-gray-500 tracking-wider uppercase">Centro de Mando</p>
@@ -49,26 +48,21 @@
         </div>
     </div>
 
-    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-4 gap-4">
         
         <div class="bg-gray-100 p-4 rounded-2xl border border-gray-200 flex flex-col">
             <h2 class="font-bold text-gray-700 mb-4 flex justify-between items-center">
                 📋 Por Asignar 
-                <span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">3</span>
+                <span id="count-pendientes" class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">0</span>
             </h2>
-            <div id="lista-pendientes" class="lista-tareas flex-1 min-h-[200px] space-y-3">
-                <div class="tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400">
-                    <p class="font-bold text-sm">Fumigar cuartel norte</p>
-                    <div class="flex gap-1 mt-2">
-                        <span class="text-[10px] bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-md">🛑 Falta Insumo</span>
-                    </div>
-                </div>
-                
-                <div class="tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-gray-400">
-                    <p class="font-bold text-sm">Revisar bomba de agua</p>
-                </div>
+            
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="nueva-tarea-input" placeholder="Escribe una tarea..." class="w-full p-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-tierra focus:ring-1 focus:ring-tierra">
+                <button id="btn-add-tarea" class="bg-tierra text-white px-3 rounded-xl font-bold hover:bg-amber-800 transition">+</button>
             </div>
-            <button class="mt-4 w-full bg-gray-200 text-gray-600 font-bold py-2 rounded-xl hover:bg-gray-300 transition text-sm">+ Nueva Tarea</button>
+
+            <div id="lista-pendientes" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="pendientes">
+                </div>
         </div>
 
         <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex flex-col">
@@ -76,16 +70,10 @@
                 <div class="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center font-black text-emerald-600 text-lg">JG</div>
                 <div>
                     <h2 class="font-bold text-emerald-800 leading-tight">Jorge</h2>
-                    <div class="w-full bg-emerald-200 h-1.5 rounded-full mt-1">
-                        <div class="bg-emerald-500 h-1.5 rounded-full w-[60%]"></div>
-                    </div>
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase">Trabajador</p>
                 </div>
             </div>
-            <div id="lista-jorge" class="lista-tareas flex-1 min-h-[200px] space-y-3">
-                <div class="tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-emerald-400">
-                    <p class="font-bold text-sm">Limpiar canales</p>
-                </div>
-            </div>
+            <div id="lista-jorge" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="jorge"></div>
         </div>
 
         <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex flex-col">
@@ -93,13 +81,10 @@
                 <div class="w-10 h-10 bg-amber-200 rounded-full flex items-center justify-center font-black text-amber-600 text-lg">JN</div>
                 <div>
                     <h2 class="font-bold text-amber-800 leading-tight">Juan</h2>
-                    <div class="w-full bg-amber-200 h-1.5 rounded-full mt-1">
-                        <div class="bg-amber-500 h-1.5 rounded-full w-[30%]"></div>
-                    </div>
+                    <p class="text-[10px] font-bold text-amber-600 uppercase">Trabajador</p>
                 </div>
             </div>
-            <div id="lista-juan" class="lista-tareas flex-1 min-h-[200px] space-y-3">
-                </div>
+            <div id="lista-juan" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="juan"></div>
         </div>
 
         <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-col">
@@ -107,36 +92,140 @@
                 <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center font-black text-blue-600 text-lg">JM</div>
                 <div>
                     <h2 class="font-bold text-blue-800 leading-tight">Jaime</h2>
-                    <div class="w-full bg-blue-200 h-1.5 rounded-full mt-1">
-                        <div class="bg-blue-500 h-1.5 rounded-full w-[90%]"></div>
-                    </div>
+                    <p class="text-[10px] font-bold text-blue-600 uppercase">Trabajador</p>
                 </div>
             </div>
-            <div id="lista-jaime" class="lista-tareas flex-1 min-h-[200px] space-y-3">
-                 <div class="tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-400">
-                    <p class="font-bold text-sm">Reparar tractor</p>
-                </div>
-            </div>
+            <div id="lista-jaime" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="jaime"></div>
         </div>
 
     </div>
 
-    <script>
-        // Inicializar Drag and Drop conectando todas las listas
-        const opcionesSortable = {
-            group: 'tareas', // Esto permite mover items entre diferentes listas
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            onEnd: function (evt) {
-                // Aquí en el futuro capturaremos a dónde se movió la tarea para actualizar Firebase
-                console.log(`Tarea movida a: ${evt.to.id}`);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, orderBy } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Tus credenciales reales
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcMDgHeKsvfViSQW4u9VWX8BpgyLNUInI",
+            authDomain: "parcelapp-3297c.firebaseapp.com",
+            projectId: "parcelapp-3297c",
+            storageBucket: "parcelapp-3297c.firebasestorage.app",
+            messagingSenderId: "805959703160",
+            appId: "1:805959703160:web:e045ea62902e33cbf56b8d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const tareasCol = collection(db, "tareas");
+
+        let tareasArray = [];
+
+        // --- RENDERIZAR TAREAS ---
+        function renderTareas() {
+            // Limpiar listas
+            document.getElementById('lista-pendientes').innerHTML = '';
+            document.getElementById('lista-jorge').innerHTML = '';
+            document.getElementById('lista-juan').innerHTML = '';
+            document.getElementById('lista-jaime').innerHTML = '';
+
+            let pendientesCount = 0;
+
+            tareasArray.forEach(t => {
+                const div = document.createElement('div');
+                div.className = "tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 group flex justify-between items-center";
+                
+                // Color borde segun estado/asignado
+                let bordeColor = "border-l-gray-400";
+                if(t.asignado === 'jorge') bordeColor = "border-l-emerald-400";
+                if(t.asignado === 'juan') bordeColor = "border-l-amber-400";
+                if(t.asignado === 'jaime') bordeColor = "border-l-blue-400";
+                
+                div.classList.add("border-l-4", bordeColor);
+                div.dataset.id = t.id; // Clave para saber qué tarea movemos
+
+                div.innerHTML = `
+                    <p class="font-bold text-sm text-gray-700 select-none">${t.texto}</p>
+                    <button onclick="borrarTarea('${t.id}')" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                `;
+
+                // Colocar la tarea en la columna correcta
+                document.getElementById(`lista-${t.asignado}`).appendChild(div);
+
+                if(t.asignado === 'pendientes') pendientesCount++;
+            });
+
+            document.getElementById('count-pendientes').innerText = pendientesCount;
+        }
+
+        // --- ESCUCHAR FIREBASE EN TIEMPO REAL ---
+        onSnapshot(query(tareasCol, orderBy("fecha", "desc")), (snap) => {
+            tareasArray = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderTareas();
+        });
+
+        // --- AÑADIR NUEVA TAREA ---
+        document.getElementById('btn-add-tarea').onclick = async () => {
+            const input = document.getElementById('nueva-tarea-input');
+            if (!input.value.trim()) return;
+            
+            try {
+                await addDoc(tareasCol, {
+                    texto: input.value,
+                    asignado: 'pendientes', // Por defecto no tiene dueño
+                    bloqueada: false,
+                    fecha: Date.now()
+                });
+                input.value = '';
+            } catch (error) {
+                console.error("Error al guardar en Firebase:", error);
+                alert("Error al guardar: " + error.message + "\n\nRevisa si la Base de Datos está en Modo de Prueba.");
             }
         };
 
-        new Sortable(document.getElementById('lista-pendientes'), opcionesSortable);
-        new Sortable(document.getElementById('lista-jorge'), opcionesSortable);
-        new Sortable(document.getElementById('lista-juan'), opcionesSortable);
-        new Sortable(document.getElementById('lista-jaime'), opcionesSortable);
+        // Permitir usar "Enter" para guardar
+        document.getElementById('nueva-tarea-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') document.getElementById('btn-add-tarea').click();
+        });
+
+        // --- BORRAR TAREA ---
+        window.borrarTarea = async (id) => {
+            if(confirm("¿Borrar esta tarea?")) {
+                try {
+                    await deleteDoc(doc(db, "tareas", id));
+                } catch (error) {
+                    alert("Error al borrar: " + error.message);
+                }
+            }
+        };
+
+        // --- DRAG AND DROP (Sincronizado con Firebase) ---
+        const initSortable = (idLista) => {
+            new Sortable(document.getElementById(idLista), {
+                group: 'tareas',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function (evt) {
+                    const idTarea = evt.item.dataset.id;
+                    const nuevoAsignado = evt.to.dataset.asignado; // Captura si es jorge, juan, etc.
+                    
+                    try {
+                        // Actualizamos en Firebase
+                        await updateDoc(doc(db, "tareas", idTarea), { asignado: nuevoAsignado });
+                    } catch (error) {
+                        alert("Error al mover tarea: " + error.message);
+                        // Recargar visualmente si falla para evitar inconsistencias
+                        renderTareas();
+                    }
+                }
+            });
+        };
+
+        // Inicializamos las 4 columnas
+        initSortable('lista-pendientes');
+        initSortable('lista-jorge');
+        initSortable('lista-juan');
+        initSortable('lista-jaime');
     </script>
 </body>
 </html>
