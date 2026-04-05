@@ -33,18 +33,29 @@
         /* Estilo para tareas bloqueadas */
         .bloqueada { background-color: #fef2f2 !important; border-color: #fca5a5 !important; }
         .bloqueada p { color: #991b1b !important; }
+        
+        /* Ocultar barra de scroll en modales */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen relative">
 
-    <div class="w-full max-w-6xl flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+    <div class="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <div>
-            <h1 class="text-3xl font-extrabold text-tierra">ParcelAPP 🌱</h1>
-            <p class="text-sm font-semibold text-gray-500 tracking-wider uppercase">Centro de Mando</p>
+            <h1 class="text-3xl font-extrabold text-tierra text-center md:text-left">ParcelAPP 🌱</h1>
+            <p class="text-sm font-semibold text-gray-500 tracking-wider uppercase text-center md:text-left">Centro de Mando</p>
         </div>
-        <div class="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl font-bold flex items-center gap-2 border border-blue-100">
-            <span>☀️ 24°C</span>
-            <span class="text-xs text-blue-400 border-l border-blue-200 pl-2">Despejado</span>
+        
+        <div class="flex items-center gap-3 w-full md:w-auto justify-center">
+            <button onclick="abrirModalInsumos()" class="bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-bold flex items-center gap-2 border border-blue-100 hover:bg-blue-100 transition shadow-sm">
+                <span>🛒 Insumos</span>
+                <span id="count-insumos" class="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-full font-black">0</span>
+            </button>
+            
+            <button onclick="abrirModalCrear()" class="bg-tierra text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-800 transition shadow-md active:scale-95 flex items-center gap-2">
+                <span>+ NUEVO</span>
+            </button>
         </div>
     </div>
 
@@ -53,13 +64,8 @@
         <div class="bg-gray-100 p-4 rounded-2xl border border-gray-200 flex flex-col">
             <h2 class="font-bold text-gray-700 mb-4 flex justify-between items-center">
                 📋 Por Asignar 
-                <span id="count-pendientes" class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">0</span>
+                <span id="count-pendientes" class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full font-black">0</span>
             </h2>
-            
-            <button onclick="abrirModal()" class="w-full bg-tierra text-white font-bold py-3 rounded-xl hover:bg-amber-800 transition mb-4 shadow-md active:scale-95">
-                + Nueva Tarea
-            </button>
-
             <div id="lista-pendientes" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="pendientes">
                 </div>
         </div>
@@ -99,16 +105,19 @@
 
     </div>
 
-    <div id="modal-tarea" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nueva Tarea</h3>
+    <div id="modal-crear" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm hidden flex items-start justify-center z-50 p-4 pt-20 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="modal-crear-content">
             
-            <div class="space-y-4">
+            <div class="flex gap-2 bg-gray-100 p-1.5 rounded-2xl mb-6">
+                <button onclick="switchTab('tarea')" id="tab-tarea" class="flex-1 bg-white shadow-sm rounded-xl py-2 font-black text-tierra transition-all">📋 TAREA</button>
+                <button onclick="switchTab('insumo')" id="tab-insumo" class="flex-1 text-gray-500 font-bold py-2 rounded-xl transition-all">🛒 INSUMO</button>
+            </div>
+
+            <div id="form-tarea" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción</label>
-                    <input type="text" id="input-texto" placeholder="Ej: Reparar cerco perimetral" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-tierra focus:ring-1 focus:ring-tierra">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué hay que hacer?</label>
+                    <input type="text" id="input-tarea-texto" placeholder="Ej: Limpiar ionizador..." class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-tierra focus:ring-1 focus:ring-tierra font-semibold">
                 </div>
-                
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Frecuencia</label>
                     <select id="input-frecuencia" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none font-semibold text-gray-700">
@@ -118,12 +127,35 @@
                         <option value="Mensual">📆 Mensual</option>
                     </select>
                 </div>
-
-                <div class="flex gap-3 pt-2">
-                    <button onclick="cerrarModal()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition">Cancelar</button>
-                    <button id="btn-guardar-tarea" class="flex-1 bg-tierra text-white font-bold py-3 rounded-xl hover:bg-amber-800 transition shadow-lg">Guardar</button>
+                <div class="flex gap-3 pt-4 border-t border-gray-100">
+                    <button onclick="cerrarModalCrear()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">Cancelar</button>
+                    <button id="btn-guardar-tarea" class="flex-1 bg-tierra text-white font-bold py-3 rounded-xl hover:bg-amber-800 transition shadow-lg">Añadir Tarea</button>
                 </div>
             </div>
+
+            <div id="form-insumo" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">¿Qué se necesita comprar?</label>
+                    <input type="text" id="input-insumo-texto" placeholder="Ej: Bidón de Cloro 5L..." class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-semibold">
+                </div>
+                <div class="flex gap-3 pt-4 border-t border-gray-100">
+                    <button onclick="cerrarModalCrear()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition">Cancelar</button>
+                    <button id="btn-guardar-insumo" class="flex-1 bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition shadow-lg">Añadir Insumo</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal-insumos" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]" id="modal-insumos-content">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
+                <h3 class="text-xl font-black text-blue-600 flex items-center gap-2">🛒 Lista de Compras</h3>
+                <button onclick="cerrarModalInsumos()" class="text-gray-400 hover:text-gray-700 bg-gray-100 w-8 h-8 rounded-full font-bold pb-1">x</button>
+            </div>
+            
+            <ul id="lista-compras" class="space-y-2 overflow-y-auto no-scrollbar flex-1 pb-2">
+                </ul>
         </div>
     </div>
 
@@ -132,6 +164,7 @@
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, orderBy } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Credenciales oficiales
         const firebaseConfig = {
             apiKey: "AIzaSyBcMDgHeKsvfViSQW4u9VWX8BpgyLNUInI",
             authDomain: "parcelapp-3297c.firebaseapp.com",
@@ -143,32 +176,66 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        // Colecciones en Firebase
         const tareasCol = collection(db, "tareas");
+        const insumosCol = collection(db, "insumos");
 
         let tareasArray = [];
+        let insumosArray = [];
 
-        // --- CONTROL DEL MODAL ---
-        window.abrirModal = () => {
-            const modal = document.getElementById('modal-tarea');
-            const content = document.getElementById('modal-content');
+        // --- CONTROL MODAL CREAR (TABS) ---
+        window.abrirModalCrear = () => {
+            const modal = document.getElementById('modal-crear');
+            const content = document.getElementById('modal-crear-content');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-            document.getElementById('input-texto').focus();
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+            document.getElementById('input-tarea-texto').focus();
         };
 
-        window.cerrarModal = () => {
-            const modal = document.getElementById('modal-tarea');
-            const content = document.getElementById('modal-content');
+        window.cerrarModalCrear = () => {
+            const modal = document.getElementById('modal-crear');
+            const content = document.getElementById('modal-crear-content');
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                document.getElementById('input-texto').value = '';
-                document.getElementById('input-frecuencia').value = 'Unica';
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                document.getElementById('input-tarea-texto').value = '';
+                document.getElementById('input-insumo-texto').value = '';
             }, 300);
+        };
+
+        window.switchTab = (tipo) => {
+            const isTarea = tipo === 'tarea';
+            
+            // Botones visuales
+            document.getElementById('tab-tarea').className = isTarea 
+                ? "flex-1 bg-white shadow-sm rounded-xl py-2 font-black text-tierra transition-all" 
+                : "flex-1 text-gray-500 font-bold py-2 rounded-xl transition-all hover:bg-gray-200";
+            
+            document.getElementById('tab-insumo').className = !isTarea 
+                ? "flex-1 bg-white shadow-sm rounded-xl py-2 font-black text-blue-600 transition-all" 
+                : "flex-1 text-gray-500 font-bold py-2 rounded-xl transition-all hover:bg-gray-200";
+
+            // Mostrar/Ocultar formularios
+            document.getElementById('form-tarea').classList.toggle('hidden', !isTarea);
+            document.getElementById('form-insumo').classList.toggle('hidden', isTarea);
+
+            // Foco automatico
+            if(isTarea) document.getElementById('input-tarea-texto').focus();
+            else document.getElementById('input-insumo-texto').focus();
+        };
+
+        // --- CONTROL MODAL INSUMOS ---
+        window.abrirModalInsumos = () => {
+            const modal = document.getElementById('modal-insumos');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
+        };
+        window.cerrarModalInsumos = () => {
+            const modal = document.getElementById('modal-insumos');
+            modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         };
 
         // --- RENDERIZAR TAREAS ---
@@ -183,39 +250,38 @@
             tareasArray.forEach(t => {
                 const div = document.createElement('div');
                 
-                // Clases dinámicas
-                let baseClass = "tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-2 transition-colors";
+                let baseClass = "tarea-card bg-white p-3 rounded-xl shadow-sm border flex flex-col gap-2 transition-colors";
                 if(t.bloqueada) baseClass += " bloqueada";
                 
-                // Color del borde
-                let borderClass = "border-l-4 border-l-gray-400";
-                if(t.asignado === 'jorge') borderClass = "border-l-4 border-l-emerald-400";
-                if(t.asignado === 'juan') borderClass = "border-l-4 border-l-amber-400";
-                if(t.asignado === 'jaime') borderClass = "border-l-4 border-l-blue-400";
+                let borderClass = "border-l-4 border-gray-200 border-l-gray-400";
+                if(t.asignado === 'jorge') borderClass = "border-l-4 border-emerald-100 border-l-emerald-400";
+                if(t.asignado === 'juan') borderClass = "border-l-4 border-amber-100 border-l-amber-400";
+                if(t.asignado === 'jaime') borderClass = "border-l-4 border-blue-100 border-l-blue-400";
 
                 div.className = `${baseClass} ${borderClass}`;
                 div.dataset.id = t.id;
 
-                // Color del badge de frecuencia
                 let freqColor = "bg-gray-100 text-gray-600";
                 if(t.frecuencia === 'Diaria') freqColor = "bg-blue-100 text-blue-600";
                 if(t.frecuencia === 'Semanal') freqColor = "bg-purple-100 text-purple-600";
                 if(t.frecuencia === 'Mensual') freqColor = "bg-orange-100 text-orange-600";
 
+                // Botón de bloqueo UX Mejorado
+                const btnBloqueo = t.bloqueada 
+                    ? `<button onclick="toggleBloqueo('${t.id}', true)" class="text-[10px] flex items-center gap-1 font-black px-2 py-1 rounded-md bg-red-100 text-red-600 border border-red-200 active:scale-95 transition-transform">🛑 BLOQUEADA</button>`
+                    : `<button onclick="toggleBloqueo('${t.id}', false)" class="text-[10px] flex items-center gap-1 font-bold px-2 py-1 rounded-md bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-gray-600 active:scale-95 transition-colors">⚠️ Bloquear</button>`;
+
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <p class="font-bold text-sm text-gray-700 leading-tight pr-2 select-none">${t.texto}</p>
-                        <button onclick="borrarTarea('${t.id}')" class="text-gray-400 hover:text-red-500 transition-colors">×</button>
+                        <button onclick="borrarTarea('${t.id}')" class="text-gray-300 hover:text-red-500 font-bold px-1 transition-colors">×</button>
                     </div>
                     
-                    <div class="flex justify-between items-center mt-1">
-                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${freqColor}">
+                    <div class="flex justify-between items-center mt-1 pt-2 border-t ${t.bloqueada ? 'border-red-100' : 'border-gray-100'}">
+                        <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${freqColor}">
                             ${t.frecuencia}
                         </span>
-                        
-                        <button onclick="toggleBloqueo('${t.id}', ${t.bloqueada})" class="text-xs flex items-center gap-1 font-bold px-2 py-1 rounded-lg transition-colors ${t.bloqueada ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500'}">
-                            ${t.bloqueada ? '🛑 BLOQUEADA' : 'Falta Insumo'}
-                        </button>
+                        ${btnBloqueo}
                     </div>
                 `;
 
@@ -226,61 +292,98 @@
             document.getElementById('count-pendientes').innerText = pendientesCount;
         }
 
-        // --- ESCUCHAR FIREBASE ---
+        // --- RENDERIZAR INSUMOS ---
+        function renderInsumos() {
+            const lista = document.getElementById('lista-compras');
+            lista.innerHTML = '';
+            
+            // Contar pendientes para el Header
+            const pendientes = insumosArray.filter(i => !i.comprado).length;
+            document.getElementById('count-insumos').innerText = pendientes;
+            
+            if(insumosArray.length === 0) {
+                lista.innerHTML = `<p class="text-center text-sm text-gray-400 italic mt-4">No hay insumos pendientes.</p>`;
+                return;
+            }
+
+            // Ordenar: Pendientes arriba, comprados abajo
+            const sorted = insumosArray.sort((a, b) => (a.comprado === b.comprado) ? 0 : a.comprado ? 1 : -1);
+
+            sorted.forEach(insumo => {
+                const li = document.createElement('li');
+                li.className = `flex justify-between items-center p-3 rounded-xl border ${insumo.comprado ? 'bg-gray-50 border-gray-100 opacity-60' : 'bg-white border-gray-200 shadow-sm'}`;
+                
+                li.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${insumo.comprado ? 'checked' : ''} onclick="toggleInsumo('${insumo.id}', ${insumo.comprado})" class="w-5 h-5 accent-blue-500 rounded">
+                        <span class="text-sm font-bold ${insumo.comprado ? 'text-gray-400 line-through' : 'text-gray-700'}">${insumo.texto}</span>
+                    </div>
+                    <button onclick="borrarInsumo('${insumo.id}')" class="text-gray-300 hover:text-red-500 font-bold px-2 text-xl pb-1">×</button>
+                `;
+                lista.appendChild(li);
+            });
+        }
+
+        // --- ESCUCHAS FIREBASE ---
         onSnapshot(query(tareasCol, orderBy("fecha", "desc")), (snap) => {
             tareasArray = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTareas();
         });
 
-        // --- AÑADIR NUEVA TAREA ---
+        onSnapshot(query(insumosCol, orderBy("fecha", "desc")), (snap) => {
+            insumosArray = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderInsumos();
+        });
+
+        // --- ACCIONES TAREAS ---
         document.getElementById('btn-guardar-tarea').onclick = async () => {
-            const texto = document.getElementById('input-texto').value;
-            const frecuencia = document.getElementById('input-frecuencia').value;
-            
+            const texto = document.getElementById('input-tarea-texto').value;
             if (!texto.trim()) return;
-            
             try {
                 await addDoc(tareasCol, {
-                    texto: texto,
-                    frecuencia: frecuencia,
-                    asignado: 'pendientes',
-                    bloqueada: false,
-                    fecha: Date.now()
+                    texto: texto, frecuencia: document.getElementById('input-frecuencia').value,
+                    asignado: 'pendientes', bloqueada: false, fecha: Date.now()
                 });
-                cerrarModal();
-            } catch (error) {
-                alert("Error al guardar: " + error.message);
-            }
+                cerrarModalCrear();
+            } catch (error) { alert("Error: " + error.message); }
         };
 
-        // --- BORRAR TAREA ---
         window.borrarTarea = async (id) => {
-            if(confirm("¿Seguro que deseas eliminar esta tarea?")) {
-                await deleteDoc(doc(db, "tareas", id));
-            }
+            if(confirm("¿Eliminar tarea definitivamente?")) await deleteDoc(doc(db, "tareas", id));
         };
 
-        // --- TOGGLE BLOQUEO ---
         window.toggleBloqueo = async (id, estadoActual) => {
             await updateDoc(doc(db, "tareas", id), { bloqueada: !estadoActual });
+        };
+
+        // --- ACCIONES INSUMOS ---
+        document.getElementById('btn-guardar-insumo').onclick = async () => {
+            const texto = document.getElementById('input-insumo-texto').value;
+            if (!texto.trim()) return;
+            try {
+                await addDoc(insumosCol, { texto: texto, comprado: false, fecha: Date.now() });
+                cerrarModalCrear();
+                abrirModalInsumos(); // Abre la lista automáticamente para que vea que se agregó
+            } catch (error) { alert("Error: " + error.message); }
+        };
+
+        window.toggleInsumo = async (id, estadoActual) => {
+            await updateDoc(doc(db, "insumos", id), { comprado: !estadoActual });
+        };
+
+        window.borrarInsumo = async (id) => {
+            await deleteDoc(doc(db, "insumos", id));
         };
 
         // --- DRAG AND DROP ---
         const initSortable = (idLista) => {
             new Sortable(document.getElementById(idLista), {
-                group: 'tareas',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
+                group: 'tareas', animation: 150, ghostClass: 'sortable-ghost',
                 onEnd: async function (evt) {
                     const idTarea = evt.item.dataset.id;
                     const nuevoAsignado = evt.to.dataset.asignado;
-                    
-                    try {
-                        await updateDoc(doc(db, "tareas", idTarea), { asignado: nuevoAsignado });
-                    } catch (error) {
-                        alert("Error de conexión al mover la tarea.");
-                        renderTareas();
-                    }
+                    try { await updateDoc(doc(db, "tareas", idTarea), { asignado: nuevoAsignado }); } 
+                    catch (error) { renderTareas(); }
                 }
             });
         };
