@@ -17,11 +17,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Nunito', 'sans-serif'] },
-                    colors: {
-                        tierra: '#8B5A2B',
-                        pasto: '#4CAF50',
-                        cielo: '#87CEEB'
-                    }
+                    colors: { tierra: '#8B5A2B', pasto: '#4CAF50', cielo: '#87CEEB' }
                 }
             }
         }
@@ -31,13 +27,17 @@
         body { background-color: #f4f6f8; color: #333; }
         .tarea-card { cursor: grab; }
         .tarea-card:active { cursor: grabbing; transform: scale(0.98); }
-        .sortable-ghost { opacity: 0.4; background-color: #e2e8f0; }
+        .sortable-ghost { opacity: 0.4; background-color: #e2e8f0; border: 2px dashed #94a3b8; }
         .sortable-drag { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* Estilo para tareas bloqueadas */
+        .bloqueada { background-color: #fef2f2 !important; border-color: #fca5a5 !important; }
+        .bloqueada p { color: #991b1b !important; }
     </style>
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen relative">
 
-    <div class="w-full max-w-5xl flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+    <div class="w-full max-w-6xl flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <div>
             <h1 class="text-3xl font-extrabold text-tierra">ParcelAPP 🌱</h1>
             <p class="text-sm font-semibold text-gray-500 tracking-wider uppercase">Centro de Mando</p>
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-4">
         
         <div class="bg-gray-100 p-4 rounded-2xl border border-gray-200 flex flex-col">
             <h2 class="font-bold text-gray-700 mb-4 flex justify-between items-center">
@@ -56,10 +56,9 @@
                 <span id="count-pendientes" class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">0</span>
             </h2>
             
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="nueva-tarea-input" placeholder="Escribe una tarea..." class="w-full p-2 rounded-xl border border-gray-300 text-sm outline-none focus:border-tierra focus:ring-1 focus:ring-tierra">
-                <button id="btn-add-tarea" class="bg-tierra text-white px-3 rounded-xl font-bold hover:bg-amber-800 transition">+</button>
-            </div>
+            <button onclick="abrirModal()" class="w-full bg-tierra text-white font-bold py-3 rounded-xl hover:bg-amber-800 transition mb-4 shadow-md active:scale-95">
+                + Nueva Tarea
+            </button>
 
             <div id="lista-pendientes" class="lista-tareas flex-1 min-h-[200px] space-y-3" data-asignado="pendientes">
                 </div>
@@ -67,7 +66,7 @@
 
         <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex flex-col">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center font-black text-emerald-600 text-lg">JG</div>
+                <div class="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center font-black text-emerald-600 text-lg shadow-inner">JG</div>
                 <div>
                     <h2 class="font-bold text-emerald-800 leading-tight">Jorge</h2>
                     <p class="text-[10px] font-bold text-emerald-600 uppercase">Trabajador</p>
@@ -78,7 +77,7 @@
 
         <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex flex-col">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-amber-200 rounded-full flex items-center justify-center font-black text-amber-600 text-lg">JN</div>
+                <div class="w-10 h-10 bg-amber-200 rounded-full flex items-center justify-center font-black text-amber-600 text-lg shadow-inner">JN</div>
                 <div>
                     <h2 class="font-bold text-amber-800 leading-tight">Juan</h2>
                     <p class="text-[10px] font-bold text-amber-600 uppercase">Trabajador</p>
@@ -89,7 +88,7 @@
 
         <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-col">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center font-black text-blue-600 text-lg">JM</div>
+                <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center font-black text-blue-600 text-lg shadow-inner">JM</div>
                 <div>
                     <h2 class="font-bold text-blue-800 leading-tight">Jaime</h2>
                     <p class="text-[10px] font-bold text-blue-600 uppercase">Trabajador</p>
@@ -100,12 +99,39 @@
 
     </div>
 
+    <div id="modal-tarea" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nueva Tarea</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción</label>
+                    <input type="text" id="input-texto" placeholder="Ej: Reparar cerco perimetral" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-tierra focus:ring-1 focus:ring-tierra">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Frecuencia</label>
+                    <select id="input-frecuencia" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none font-semibold text-gray-700">
+                        <option value="Unica">📌 Única vez</option>
+                        <option value="Diaria">🔄 Diaria</option>
+                        <option value="Semanal">📅 Semanal</option>
+                        <option value="Mensual">📆 Mensual</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button onclick="cerrarModal()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition">Cancelar</button>
+                    <button id="btn-guardar-tarea" class="flex-1 bg-tierra text-white font-bold py-3 rounded-xl hover:bg-amber-800 transition shadow-lg">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, orderBy } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Tus credenciales reales
         const firebaseConfig = {
             apiKey: "AIzaSyBcMDgHeKsvfViSQW4u9VWX8BpgyLNUInI",
             authDomain: "parcelapp-3297c.firebaseapp.com",
@@ -121,9 +147,32 @@
 
         let tareasArray = [];
 
+        // --- CONTROL DEL MODAL ---
+        window.abrirModal = () => {
+            const modal = document.getElementById('modal-tarea');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            document.getElementById('input-texto').focus();
+        };
+
+        window.cerrarModal = () => {
+            const modal = document.getElementById('modal-tarea');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('input-texto').value = '';
+                document.getElementById('input-frecuencia').value = 'Unica';
+            }, 300);
+        };
+
         // --- RENDERIZAR TAREAS ---
         function renderTareas() {
-            // Limpiar listas
             document.getElementById('lista-pendientes').innerHTML = '';
             document.getElementById('lista-jorge').innerHTML = '';
             document.getElementById('lista-juan').innerHTML = '';
@@ -133,73 +182,90 @@
 
             tareasArray.forEach(t => {
                 const div = document.createElement('div');
-                div.className = "tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 group flex justify-between items-center";
                 
-                // Color borde segun estado/asignado
-                let bordeColor = "border-l-gray-400";
-                if(t.asignado === 'jorge') bordeColor = "border-l-emerald-400";
-                if(t.asignado === 'juan') bordeColor = "border-l-amber-400";
-                if(t.asignado === 'jaime') bordeColor = "border-l-blue-400";
+                // Clases dinámicas
+                let baseClass = "tarea-card bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-2 transition-colors";
+                if(t.bloqueada) baseClass += " bloqueada";
                 
-                div.classList.add("border-l-4", bordeColor);
-                div.dataset.id = t.id; // Clave para saber qué tarea movemos
+                // Color del borde
+                let borderClass = "border-l-4 border-l-gray-400";
+                if(t.asignado === 'jorge') borderClass = "border-l-4 border-l-emerald-400";
+                if(t.asignado === 'juan') borderClass = "border-l-4 border-l-amber-400";
+                if(t.asignado === 'jaime') borderClass = "border-l-4 border-l-blue-400";
+
+                div.className = `${baseClass} ${borderClass}`;
+                div.dataset.id = t.id;
+
+                // Color del badge de frecuencia
+                let freqColor = "bg-gray-100 text-gray-600";
+                if(t.frecuencia === 'Diaria') freqColor = "bg-blue-100 text-blue-600";
+                if(t.frecuencia === 'Semanal') freqColor = "bg-purple-100 text-purple-600";
+                if(t.frecuencia === 'Mensual') freqColor = "bg-orange-100 text-orange-600";
 
                 div.innerHTML = `
-                    <p class="font-bold text-sm text-gray-700 select-none">${t.texto}</p>
-                    <button onclick="borrarTarea('${t.id}')" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                    <div class="flex justify-between items-start">
+                        <p class="font-bold text-sm text-gray-700 leading-tight pr-2 select-none">${t.texto}</p>
+                        <button onclick="borrarTarea('${t.id}')" class="text-gray-400 hover:text-red-500 transition-colors">×</button>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${freqColor}">
+                            ${t.frecuencia}
+                        </span>
+                        
+                        <button onclick="toggleBloqueo('${t.id}', ${t.bloqueada})" class="text-xs flex items-center gap-1 font-bold px-2 py-1 rounded-lg transition-colors ${t.bloqueada ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500'}">
+                            ${t.bloqueada ? '🛑 BLOQUEADA' : 'Falta Insumo'}
+                        </button>
+                    </div>
                 `;
 
-                // Colocar la tarea en la columna correcta
                 document.getElementById(`lista-${t.asignado}`).appendChild(div);
-
                 if(t.asignado === 'pendientes') pendientesCount++;
             });
 
             document.getElementById('count-pendientes').innerText = pendientesCount;
         }
 
-        // --- ESCUCHAR FIREBASE EN TIEMPO REAL ---
+        // --- ESCUCHAR FIREBASE ---
         onSnapshot(query(tareasCol, orderBy("fecha", "desc")), (snap) => {
             tareasArray = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTareas();
         });
 
         // --- AÑADIR NUEVA TAREA ---
-        document.getElementById('btn-add-tarea').onclick = async () => {
-            const input = document.getElementById('nueva-tarea-input');
-            if (!input.value.trim()) return;
+        document.getElementById('btn-guardar-tarea').onclick = async () => {
+            const texto = document.getElementById('input-texto').value;
+            const frecuencia = document.getElementById('input-frecuencia').value;
+            
+            if (!texto.trim()) return;
             
             try {
                 await addDoc(tareasCol, {
-                    texto: input.value,
-                    asignado: 'pendientes', // Por defecto no tiene dueño
+                    texto: texto,
+                    frecuencia: frecuencia,
+                    asignado: 'pendientes',
                     bloqueada: false,
                     fecha: Date.now()
                 });
-                input.value = '';
+                cerrarModal();
             } catch (error) {
-                console.error("Error al guardar en Firebase:", error);
-                alert("Error al guardar: " + error.message + "\n\nRevisa si la Base de Datos está en Modo de Prueba.");
+                alert("Error al guardar: " + error.message);
             }
         };
-
-        // Permitir usar "Enter" para guardar
-        document.getElementById('nueva-tarea-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') document.getElementById('btn-add-tarea').click();
-        });
 
         // --- BORRAR TAREA ---
         window.borrarTarea = async (id) => {
-            if(confirm("¿Borrar esta tarea?")) {
-                try {
-                    await deleteDoc(doc(db, "tareas", id));
-                } catch (error) {
-                    alert("Error al borrar: " + error.message);
-                }
+            if(confirm("¿Seguro que deseas eliminar esta tarea?")) {
+                await deleteDoc(doc(db, "tareas", id));
             }
         };
 
-        // --- DRAG AND DROP (Sincronizado con Firebase) ---
+        // --- TOGGLE BLOQUEO ---
+        window.toggleBloqueo = async (id, estadoActual) => {
+            await updateDoc(doc(db, "tareas", id), { bloqueada: !estadoActual });
+        };
+
+        // --- DRAG AND DROP ---
         const initSortable = (idLista) => {
             new Sortable(document.getElementById(idLista), {
                 group: 'tareas',
@@ -207,21 +273,18 @@
                 ghostClass: 'sortable-ghost',
                 onEnd: async function (evt) {
                     const idTarea = evt.item.dataset.id;
-                    const nuevoAsignado = evt.to.dataset.asignado; // Captura si es jorge, juan, etc.
+                    const nuevoAsignado = evt.to.dataset.asignado;
                     
                     try {
-                        // Actualizamos en Firebase
                         await updateDoc(doc(db, "tareas", idTarea), { asignado: nuevoAsignado });
                     } catch (error) {
-                        alert("Error al mover tarea: " + error.message);
-                        // Recargar visualmente si falla para evitar inconsistencias
+                        alert("Error de conexión al mover la tarea.");
                         renderTareas();
                     }
                 }
             });
         };
 
-        // Inicializamos las 4 columnas
         initSortable('lista-pendientes');
         initSortable('lista-jorge');
         initSortable('lista-juan');
